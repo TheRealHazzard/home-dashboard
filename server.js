@@ -7,6 +7,8 @@ const os = require('os');
 const path = require('path');
 
 const { HttpError } = require('./server/httpError');
+const config = require('./server/config');
+const { getWeather } = require('./server/weather');
 
 const PORT = process.env.PORT || 3200;
 // A second, HTTPS listener alongside the plain one — installability (the
@@ -69,6 +71,11 @@ async function requestHandler(req, res) {
   try {
     if (req.method === 'GET') {
       if (route === '/api/health') return json(res, 200, { ok: true, time: Date.now() });
+
+      if (route === '/api/weather') {
+        const weather = await getWeather(config);
+        return json(res, 200, { location: config.location, units: config.location.units, ...weather });
+      }
 
       // Explicit route (not the generic static fallback below) so this
       // always carries Cache-Control: no-cache — see the sw.js comment in

@@ -40,4 +40,51 @@ body {
 
 .widget-hero {
   grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 24px;
+  color: var(--text);
+}
+
+.hero-time {
+  font-size: 3rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.hero-date {
+  color: var(--text-dim);
+  margin-top: 6px;
+}
+
+.hero-weather {
+  text-align: right;
+}
+
+.hero-weather-now {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: flex-end;
+  font-size: 1.6rem;
+}
+
+.hero-weather-icon {
+  font-size: 2rem;
+}
+
+.hero-weather-label {
+  color: var(--text-dim);
+  font-size: 1rem;
+}
+
+.hero-weather-sub {
+  color: var(--text-dim);
+  margin-top: 4px;
+}
+
+.hero-weather-error {
+  color: #e06c6c;
 }
