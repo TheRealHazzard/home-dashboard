@@ -1,4 +1,5 @@
 import ClockWeatherHero from './components/ClockWeatherHero.jsx';
+import TasksWidget from './components/TasksWidget.jsx';
 
 // Placeholder widget slots — each becomes a real component in its own
 // phase (weather, tasks, links, lights). Layout stays this simple grid
@@ -8,7 +9,7 @@ export default function App() {
   return (
     <div className="dashboard-grid">
       <ClockWeatherHero />
-      <section className="widget">Tasks</section>
+      <TasksWidget />
       <section className="widget">Quick Links</section>
       <section className="widget">Lights</section>
     </div>

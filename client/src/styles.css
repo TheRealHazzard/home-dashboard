@@ -88,3 +88,83 @@ body {
 .hero-weather-error {
   color: #e06c6c;
 }
+
+.widget-title {
+  margin: 0 0 12px;
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+}
+
+.widget-loading,
+.widget-empty {
+  color: var(--text-dim);
+}
+
+.task-list {
+  list-style: none;
+  margin: 0 0 12px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.task-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.task-check {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text);
+  font-size: 1.05rem;
+}
+
+.task-row.done .task-check {
+  color: var(--text-dim);
+  text-decoration: line-through;
+}
+
+.task-remove {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0 6px;
+}
+
+.task-add {
+  display: flex;
+  gap: 8px;
+}
+
+.task-add input {
+  flex: 1;
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 1rem;
+}
+
+.task-add button {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  cursor: pointer;
+}
+
+.task-add button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

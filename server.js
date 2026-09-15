@@ -9,6 +9,7 @@ const path = require('path');
 const { HttpError } = require('./server/httpError');
 const config = require('./server/config');
 const { getWeather } = require('./server/weather');
+const tasksStore = require('./server/tasks');
 
 const PORT = process.env.PORT || 3200;
 // A second, HTTPS listener alongside the plain one — installability (the
@@ -77,6 +78,8 @@ async function requestHandler(req, res) {
         return json(res, 200, { location: config.location, units: config.location.units, ...weather });
       }
 
+      if (route === '/api/tasks') return json(res, 200, { tasks: tasksStore.listTasks() });
+
       // Explicit route (not the generic static fallback below) so this
       // always carries Cache-Control: no-cache — see the sw.js comment in
       // Phase F for why a stale cached service-worker script is a real,
@@ -92,6 +95,29 @@ async function requestHandler(req, res) {
       // icons, and the built app's own hashed asset files) at the same
       // path it lives on disk.
       return serveFile(res, route.replace(/^\//, ''));
+    }
+
+    if (req.method === 'POST') {
+      if (route === '/api/tasks') {
+        const body = await readBody(req);
+        return json(res, 201, tasksStore.createTask(body));
+      }
+    }
+
+    const taskIdMatch = route.match(/^\/api\/tasks\/([^/]+)$/);
+    if (taskIdMatch) {
+      const id = taskIdMatch[1];
+      if (req.method === 'PATCH') {
+        const body = await readBody(req);
+        const updated = tasksStore.updateTask(id, body);
+        if (!updated) return json(res, 404, { error: 'Task not found' });
+        return json(res, 200, updated);
+      }
+      if (req.method === 'DELETE') {
+        const removed = tasksStore.removeTask(id);
+        if (!removed) return json(res, 404, { error: 'Task not found' });
+        return res.writeHead(204).end();
+      }
     }
 
     if (req.method === 'OPTIONS') return res.writeHead(204).end();
