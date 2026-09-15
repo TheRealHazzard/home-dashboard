@@ -1,0 +1,43 @@
+/* Real kiosk type scale, contrast, and grid tuning happens in Phase G,
+   once the four widgets have real content to design around. This is just
+   enough to lay the placeholder grid out sensibly in the meantime. */
+
+:root {
+  --bg: #0b0f14;
+  --surface: #141a22;
+  --line: #24303c;
+  --text: #e8edf2;
+  --text-dim: #8b98a6;
+  --accent: #4fa3ff;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  padding: 20px;
+  min-height: 100vh;
+}
+
+.widget {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 20px;
+  color: var(--text-dim);
+}
+
+.widget-hero {
+  grid-column: 1 / -1;
+}

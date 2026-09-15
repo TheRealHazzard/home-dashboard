@@ -1,0 +1,11 @@
+{
+  "location": {
+    "lat": 0,
+    "lon": 0,
+    "label": "Set your location",
+    "units": "fahrenheit"
+  },
+  "smartHome": {
+    "baseUrl": "http://localhost:3000"
+  }
+}
