@@ -10,6 +10,7 @@ const { HttpError } = require('./server/httpError');
 const config = require('./server/config');
 const { getWeather } = require('./server/weather');
 const tasksStore = require('./server/tasks');
+const linksStore = require('./server/links');
 
 const PORT = process.env.PORT || 3200;
 // A second, HTTPS listener alongside the plain one — installability (the
@@ -65,21 +66,61 @@ function json(res, code, payload) {
 
 /* --------------------------------------------------------------- routes */
 
+// Tasks and links are both "a JSON-file-backed list with the same four
+// routes" — GET list, POST create, PATCH/DELETE by id — so one generic
+// handler serves both instead of duplicating the route-matching twice.
+const CRUD_RESOURCES = [
+  { basePath: '/api/tasks', listKey: 'tasks', notFoundLabel: 'Task', store: {
+    list: tasksStore.listTasks, create: tasksStore.createTask, update: tasksStore.updateTask, remove: tasksStore.removeTask,
+  } },
+  { basePath: '/api/links', listKey: 'links', notFoundLabel: 'Link', store: {
+    list: linksStore.listLinks, create: linksStore.createLink, update: linksStore.updateLink, remove: linksStore.removeLink,
+  } },
+];
+
+/** Returns true once it has written a response (matched this resource),
+    false if `route`/`req.method` belong to something else entirely — lets
+    requestHandler just try each resource in turn and fall through. */
+async function handleCrudResource(req, res, route, { basePath, listKey, store, notFoundLabel }) {
+  if (route === basePath) {
+    if (req.method === 'GET') { json(res, 200, { [listKey]: store.list() }); return true; }
+    if (req.method === 'POST') { const body = await readBody(req); json(res, 201, store.create(body)); return true; }
+  }
+  const match = route.match(new RegExp(`^${basePath}/([^/]+)$`));
+  if (match) {
+    const id = match[1];
+    if (req.method === 'PATCH') {
+      const body = await readBody(req);
+      const updated = store.update(id, body);
+      updated ? json(res, 200, updated) : json(res, 404, { error: `${notFoundLabel} not found` });
+      return true;
+    }
+    if (req.method === 'DELETE') {
+      const removed = store.remove(id);
+      removed ? res.writeHead(204).end() : json(res, 404, { error: `${notFoundLabel} not found` });
+      return true;
+    }
+  }
+  return false;
+}
+
 async function requestHandler(req, res) {
   const url = new URL(req.url, `http://${req.headers.host}`);
   const route = url.pathname;
 
   try {
+    if (route === '/api/health' && req.method === 'GET') return json(res, 200, { ok: true, time: Date.now() });
+
+    if (route === '/api/weather' && req.method === 'GET') {
+      const weather = await getWeather(config);
+      return json(res, 200, { location: config.location, units: config.location.units, ...weather });
+    }
+
+    for (const resource of CRUD_RESOURCES) {
+      if (await handleCrudResource(req, res, route, resource)) return;
+    }
+
     if (req.method === 'GET') {
-      if (route === '/api/health') return json(res, 200, { ok: true, time: Date.now() });
-
-      if (route === '/api/weather') {
-        const weather = await getWeather(config);
-        return json(res, 200, { location: config.location, units: config.location.units, ...weather });
-      }
-
-      if (route === '/api/tasks') return json(res, 200, { tasks: tasksStore.listTasks() });
-
       // Explicit route (not the generic static fallback below) so this
       // always carries Cache-Control: no-cache — see the sw.js comment in
       // Phase F for why a stale cached service-worker script is a real,
@@ -95,29 +136,6 @@ async function requestHandler(req, res) {
       // icons, and the built app's own hashed asset files) at the same
       // path it lives on disk.
       return serveFile(res, route.replace(/^\//, ''));
-    }
-
-    if (req.method === 'POST') {
-      if (route === '/api/tasks') {
-        const body = await readBody(req);
-        return json(res, 201, tasksStore.createTask(body));
-      }
-    }
-
-    const taskIdMatch = route.match(/^\/api\/tasks\/([^/]+)$/);
-    if (taskIdMatch) {
-      const id = taskIdMatch[1];
-      if (req.method === 'PATCH') {
-        const body = await readBody(req);
-        const updated = tasksStore.updateTask(id, body);
-        if (!updated) return json(res, 404, { error: 'Task not found' });
-        return json(res, 200, updated);
-      }
-      if (req.method === 'DELETE') {
-        const removed = tasksStore.removeTask(id);
-        if (!removed) return json(res, 404, { error: 'Task not found' });
-        return res.writeHead(204).end();
-      }
     }
 
     if (req.method === 'OPTIONS') return res.writeHead(204).end();
