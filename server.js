@@ -5,6 +5,7 @@ const https = require('https');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const crypto = require('crypto');
 
 const { HttpError } = require('./server/httpError');
 const config = require('./server/config');
@@ -12,6 +13,7 @@ const { getWeather } = require('./server/weather');
 const tasksStore = require('./server/tasks');
 const linksStore = require('./server/links');
 const lights = require('./server/lights');
+const spotify = require('./server/spotify');
 
 const PORT = process.env.PORT || 3200;
 // A second, HTTPS listener alongside the plain one — installability (the
@@ -63,6 +65,18 @@ function readBody(req) {
 function json(res, code, payload) {
   res.writeHead(code, { 'Content-Type': 'application/json' });
   res.end(JSON.stringify(payload));
+}
+
+// Only ever needed for the Spotify OAuth state cookie below — a minimal
+// hand-rolled parser rather than a new dependency, matching this
+// project's plain-Node ethos everywhere else.
+function parseCookies(req) {
+  const header = req.headers.cookie;
+  if (!header) return {};
+  return Object.fromEntries(header.split(';').map(pair => {
+    const i = pair.indexOf('=');
+    return [pair.slice(0, i).trim(), decodeURIComponent(pair.slice(i + 1).trim())];
+  }));
 }
 
 /* --------------------------------------------------------------- routes */
@@ -140,6 +154,32 @@ async function requestHandler(req, res) {
       } catch (err) {
         return json(res, 503, { error: 'lights-offline', offline: true, message: err.message });
       }
+    }
+
+    if (route === '/api/spotify/now-playing' && req.method === 'GET') {
+      return json(res, 200, await spotify.getCurrentlyPlaying(config));
+    }
+
+    // Browser navigations, not JSON fetches — the "Connect Spotify" link
+    // has to land on Spotify's own login page, and Spotify's own redirect
+    // has to land back on a real page here.
+    if (route === '/auth/spotify/login' && req.method === 'GET') {
+      const state = crypto.randomBytes(16).toString('hex');
+      res.setHeader('Set-Cookie', `spotify_state=${state}; HttpOnly; Max-Age=600; Path=/auth/spotify; SameSite=Lax`);
+      res.writeHead(302, { Location: spotify.buildAuthorizeUrl(config, state) });
+      return res.end();
+    }
+    if (route === '/auth/spotify/callback' && req.method === 'GET') {
+      const code = url.searchParams.get('code');
+      const returnedState = url.searchParams.get('state');
+      const cookieState = parseCookies(req).spotify_state;
+      if (!code || !returnedState || returnedState !== cookieState) {
+        res.writeHead(400, { 'Content-Type': 'text/plain' });
+        return res.end('Spotify authorization failed (state mismatch) — try connecting again from the dashboard.');
+      }
+      await spotify.exchangeCode(config, code);
+      res.writeHead(302, { Location: '/' });
+      return res.end();
     }
 
     if (req.method === 'GET') {

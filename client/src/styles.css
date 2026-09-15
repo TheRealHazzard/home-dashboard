@@ -324,3 +324,38 @@ body {
 .light-switch input:checked + span::before {
   transform: translateX(18px);
 }
+
+.spotify-connect-link {
+  display: inline-block;
+  margin-top: 8px;
+  background: #1db954;
+  color: #06170c;
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: 999px;
+  padding: 8px 18px;
+}
+
+.spotify-now-playing {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.spotify-art {
+  width: 64px;
+  height: 64px;
+  border-radius: 6px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.spotify-track {
+  font-size: 1.05rem;
+  color: var(--text);
+}
+
+.spotify-artist {
+  color: var(--text-dim);
+  font-size: 0.9rem;
+}

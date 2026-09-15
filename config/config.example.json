@@ -7,5 +7,10 @@
   },
   "smartHome": {
     "baseUrl": "http://localhost:3000"
+  },
+  "spotify": {
+    "clientId": "",
+    "clientSecret": "",
+    "redirectUri": "http://127.0.0.1:3200/auth/spotify/callback"
   }
 }

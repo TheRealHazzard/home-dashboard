@@ -34,6 +34,29 @@ to reach it from the actual kiosk device.
 For local development with hot reload, run the server and the Vite dev
 server side by side (two terminals): `npm start` and `npm run dev`.
 
+## Connecting Spotify
+
+The Spotify widget shows what's currently playing (read-only, no
+playback controls). It needs a one-time OAuth connection:
+
+1. Create an app at the [Spotify Developer
+   Dashboard](https://developer.spotify.com/dashboard) → "Create app".
+2. Add this exact **Redirect URI**: `http://127.0.0.1:3200/auth/spotify/callback`
+   (Spotify requires the literal `127.0.0.1`, not `localhost`, for a
+   plain-http redirect). Check "Web API" under the APIs used, save.
+3. On the app's Settings page, copy the **Client ID**, and click "View
+   client secret" for the **Client Secret**.
+4. Paste both into `config/config.json`'s `spotify.clientId` /
+   `spotify.clientSecret`.
+5. With the server running, visit **`http://127.0.0.1:3200`** (not the
+   LAN address — it has to match the redirect URI you registered) and
+   click "Connect Spotify" on the widget. Approve access, and you're
+   done — the app persists a refresh token and keeps itself signed in
+   from then on, including across restarts.
+
+If the connection is ever revoked from Spotify's side, the widget just
+shows "Connect Spotify" again — no error, no restart needed.
+
 ## Installing on the kiosk device (optional)
 
 PWA install (full-screen, no browser chrome) needs HTTPS. Once
@@ -52,10 +75,13 @@ the home screen.
   React app and every `/api/*` route.
 - `server/` — one file per concern: `config.js`, `jsonStore.js` (atomic
   JSON-file persistence for tasks/links), `weather.js`, `tasks.js`,
-  `links.js`, `lights.js` (the smart-home-dashboard proxy).
-- `config/config.json` — your real location and smart-home-dashboard URL
-  (gitignored; `config.example.json` is the committed template).
-- `data/` — tasks.json / links.json, this device's own data (gitignored).
+  `links.js`, `lights.js` (the smart-home-dashboard proxy), `spotify.js`
+  (OAuth + now-playing).
+- `config/config.json` — your real location, smart-home-dashboard URL,
+  and Spotify app credentials (gitignored; `config.example.json` is the
+  committed template).
+- `data/` — tasks.json / links.json / spotify-token.json, this device's
+  own data (gitignored).
 - `client/` — the React kiosk UI (Vite).
 - `tools/` — `gen-lan-cert.js` (LAN HTTPS setup), `make-icons.js` (PWA
   icons).
