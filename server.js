@@ -11,6 +11,7 @@ const config = require('./server/config');
 const { getWeather } = require('./server/weather');
 const tasksStore = require('./server/tasks');
 const linksStore = require('./server/links');
+const lights = require('./server/lights');
 
 const PORT = process.env.PORT || 3200;
 // A second, HTTPS listener alongside the plain one — installability (the
@@ -118,6 +119,27 @@ async function requestHandler(req, res) {
 
     for (const resource of CRUD_RESOURCES) {
       if (await handleCrudResource(req, res, route, resource)) return;
+    }
+
+    if (route === '/api/lights/devices' && req.method === 'GET') {
+      return json(res, 200, await lights.listDevices(config));
+    }
+    const lightIdMatch = route.match(/^\/api\/lights\/devices\/([^/]+)$/);
+    if (lightIdMatch && req.method === 'GET') {
+      return json(res, 200, await lights.getDevice(config, lightIdMatch[1]));
+    }
+    const lightActionMatch = route.match(/^\/api\/lights\/devices\/([^/]+)\/(power|brightness|color)$/);
+    if (lightActionMatch && req.method === 'POST') {
+      const [, id, action] = lightActionMatch;
+      const body = await readBody(req);
+      try {
+        const state = action === 'power' ? await lights.setPower(config, id, Boolean(body.on))
+          : action === 'brightness' ? await lights.setBrightness(config, id, body.brightness)
+          : await lights.setColor(config, id, body);
+        return json(res, 200, { id, state });
+      } catch (err) {
+        return json(res, 503, { error: 'lights-offline', offline: true, message: err.message });
+      }
     }
 
     if (req.method === 'GET') {

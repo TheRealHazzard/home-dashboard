@@ -248,3 +248,79 @@ body {
   opacity: 0.4;
   cursor: not-allowed;
 }
+
+.lights-offline-badge {
+  margin-left: 8px;
+  font-size: 0.7rem;
+  text-transform: none;
+  letter-spacing: normal;
+  color: #e0a45c;
+  border: 1px solid #e0a45c;
+  border-radius: 999px;
+  padding: 1px 8px;
+}
+
+.light-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.light-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.light-row.stale {
+  opacity: 0.5;
+}
+
+.light-name {
+  flex: 1;
+  color: var(--text);
+}
+
+.light-switch {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 22px;
+}
+
+.light-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.light-switch span {
+  position: absolute;
+  inset: 0;
+  background: var(--line);
+  border-radius: 999px;
+  transition: background 0.15s ease;
+}
+
+.light-switch span::before {
+  content: "";
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  left: 3px;
+  top: 3px;
+  background: var(--text);
+  border-radius: 50%;
+  transition: transform 0.15s ease;
+}
+
+.light-switch input:checked + span {
+  background: var(--accent);
+}
+
+.light-switch input:checked + span::before {
+  transform: translateX(18px);
+}
