@@ -24,4 +24,11 @@ if (!config) {
   console.log('');
 }
 
-module.exports = config || DEFAULTS;
+const resolved = config || DEFAULTS;
+
+// SMART_HOME_URL overrides the config file, e.g. to point at a demo instance of smart-home-dashboard.
+if (process.env.SMART_HOME_URL) {
+  resolved.smartHome = { ...resolved.smartHome, baseUrl: process.env.SMART_HOME_URL };
+}
+
+module.exports = resolved;

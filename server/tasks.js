@@ -5,7 +5,7 @@ const crypto = require('crypto');
 const { readJson, writeJsonSafe } = require('./jsonStore');
 const { HttpError } = require('./httpError');
 
-const DATA_PATH = path.join(__dirname, '..', 'data', 'tasks.json');
+const DATA_PATH = path.join(process.env.DATA_DIR || path.join(__dirname, '..', 'data'), 'tasks.json');
 
 function load() {
   return readJson(DATA_PATH, { tasks: [] }).tasks;

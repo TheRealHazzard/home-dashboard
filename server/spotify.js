@@ -3,7 +3,7 @@
 const path = require('path');
 const { readJson, writeJsonSafe } = require('./jsonStore');
 
-const TOKEN_PATH = path.join(__dirname, '..', 'data', 'spotify-token.json');
+const TOKEN_PATH = path.join(process.env.DATA_DIR || path.join(__dirname, '..', 'data'), 'spotify-token.json');
 const TOKEN_URL = 'https://accounts.spotify.com/api/token';
 const AUTHORIZE_URL = 'https://accounts.spotify.com/authorize';
 const NOW_PLAYING_URL = 'https://api.spotify.com/v1/me/player/currently-playing';

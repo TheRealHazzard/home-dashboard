@@ -4,6 +4,8 @@ An always-on kiosk dashboard for a mounted tablet/screen: the time and
 today's weather, a short agenda, a quick-links launcher, and (through a
 proxy) smart-home lighting control.
 
+![The dashboard: clock and weather, tasks, quick links, lights and Spotify](docs/dashboard.png)
+
 ## Setup
 
 ```
@@ -33,6 +35,14 @@ to reach it from the actual kiosk device.
 
 For local development with hot reload, run the server and the Vite dev
 server side by side (two terminals): `npm start` and `npm run dev`.
+
+## Environment overrides
+
+- `PORT` and `HTTPS_PORT`: where the server listens (defaults 3200 and 3543).
+- `SMART_HOME_URL`: overrides `smartHome.baseUrl` from the config file.
+- `DATA_DIR`: where tasks, links and the Spotify token are stored (default `./data`).
+
+To try the lights widget without any hardware, start [smart-home-dashboard](https://github.com/TheRealHazzard/smart-home-dashboard) with `npm run demo` and point `SMART_HOME_URL` at it.
 
 ## Connecting Spotify
 
